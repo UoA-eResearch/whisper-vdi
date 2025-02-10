@@ -1,20 +1,37 @@
 import whisperx
 import gc 
 import time
+import os
+import torch
 
 start = time.time()
 
-device = "cpu" 
-audio_file = "/home/ubuntu/Documents/foundationnorth.mp3"
-batch_size = 64 # reduce if low on GPU mem
-compute_type = "int8" # change to "int8" if low on GPU mem (may reduce accuracy)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+audio_file = "/home/ubuntu/whisper-vdi/data/foundationnorth.mp3"
+batch_size = 32 # reduce if low on GPU mem
+if device == 'cpu':
+    compute_type = "int8" # change to "int8" if low on GPU mem (may reduce accuracy)
+else:
+    compute_type = "float16"
+
+compute_type = "float16"
+num_threads = os.cpu_count()
+print(f"*************** [INFO] NUM THREADS: {num_threads} ******************")
 
 # 1. Transcribe with original whisper (batched)
 #model = whisperx.load_model("large-v3", device, compute_type=compute_type, language='mi', threads = 32)
 
-save model to local path (optional)
-model_dir = "/home/ubuntu/whisper-vdi/"
-model = whisperx.load_model("large-v3", device, compute_type=compute_type, download_root=model_dir, language='mi', threads = 32)
+#save model to local path (optional)
+model_dir = "/home/ubuntu/whisper-vdi/models/"
+#model_name = 'Systran/faster-whisper-large-v3'
+model_name = 'deepdml/faster-whisper-large-v3-turbo-ct2'
+model = whisperx.load_model(model_name, 
+                            device, 
+                            compute_type=compute_type, 
+                            download_root=model_dir, 
+                            language='mi', 
+                            threads = num_threads,
+                            local_files_only=False)
 
 audio = whisperx.load_audio(audio_file)
 result = model.transcribe(audio, batch_size=batch_size)
