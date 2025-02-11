@@ -1,0 +1,2 @@
+large-v3-turbo,Device= cpu,Batch_size= 1,num_cores= 16,CeR= 0.12631579,runtime= 138.83681416511536
+large-v3,Device= cpu,Batch_size= 1,num_cores= 16,CeR= 0.06315789,runtime= 432.78119468688965
