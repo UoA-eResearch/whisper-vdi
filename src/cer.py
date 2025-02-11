@@ -1,27 +1,50 @@
+#!/usr/bin/env python3
+
+import jiwer
+import webvtt
+import pandas as pd
 from torchmetrics.text import CharErrorRate
-#preds = ['Aunty, tēnā koe, i whakapūare nei i ngā kuaha o tēnei whare i te rā nei,']
-#target = ['Aunty, tēnā koe, i whakapūare nei i ngā kuaha o tēnei whare i te rā nei,']
-torch_cer = CharErrorRate()
+from glob import glob
+import os
+from tqdm.auto import tqdm
 
-from jiwer import wer, cer
+reference = open("data/paraini.txt", "rt").read()
 
-preds = []
-target = []
+def get_metrics(hypothesis, name=""):
+  tr = jiwer.Compose(
+      [
+          jiwer.RemoveEmptyStrings(),
+          jiwer.ToLowerCase(),
+          jiwer.RemoveMultipleSpaces(),
+          jiwer.Strip(),
+          jiwer.RemovePunctuation(),
+          jiwer.ReduceToListOfListOfWords(),
+      ]
+  )
+  output = jiwer.process_words(reference, hypothesis, reference_transform=tr, hypothesis_transform=tr)
+  cer = jiwer.cer(reference, hypothesis, reference_transform=tr, hypothesis_transform=tr)
+  untransformed_cer = jiwer.cer(reference.lower(), hypothesis.lower())
+  return {
+    "name": name,
+    "wer": output.wer,
+    "mer": output.mer,
+    "wil": output.wil,
+    "cer": cer,
+    "untransformed_cer": untransformed_cer,
+  }
 
-path = '/home/ubuntu/whisper-vdi/data/'
-model_name = 'large-v3-turbo'
+results = []
+for f in tqdm(glob("data/*.txt")):
+    hypothesis = open(f, "rt").read()
+    name = os.path.basename(f).replace(".txt", "")
+    metrics = get_metrics(hypothesis, name)
+    results.append(metrics)
 
-gt = open(path + "paraini.txt", "rt")
-gt = str(gt).lower()
-preds = open(path + model_name + '.txt', "rt")
-preds = str(preds).lower()
+df = pd.DataFrame(results)
 
-res = torch_cer(preds, gt)
-print(str(res.numpy()))
+timings = pd.concat((pd.read_csv("gpu_tests.csv"), pd.read_csv("data/transcription_times_paraini.csv")[["name", "time"]]))
+df = df.merge(timings, on="name", how="left")
+df.sort_values("time", inplace=True)
+print(df)
 
-error = cer(gt, preds)
-print(error)
-
-with open(path + 'transcription_times' + '.csv', 'a') as f:
-    f.write(str(res.numpy()) + '\n')
-f.close()
+df.to_csv("merged_results.csv", index=False)

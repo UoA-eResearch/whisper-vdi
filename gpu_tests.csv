@@ -1,3 +1,3 @@
-name,wer,mer,wil,cer,time
-A100 + insanely-fast-whisper + large-v3 (Transformers) (fp16 + batching [24] + Flash Attention 2),0.5959595959595959,0.5264499681325685,0.7281203059360056,0.5959595959595959,8.573962
-A100 + faster-whisper + large-v3,0.5187590187590188,0.4699346405228758,0.6720482542873697,0.5187590187590188,133.168087
+name,time
+A100 + insanely-fast-whisper + large-v3 (Transformers) (fp16 + batching [24] + Flash Attention 2),8.290824
+A100 + faster-whisper + large-v3,63.661042
