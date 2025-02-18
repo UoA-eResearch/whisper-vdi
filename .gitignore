@@ -1,3 +1,7 @@
+# Ignore data files, they should be stored separately.
+data/*
+benchmark/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
