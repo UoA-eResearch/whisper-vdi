@@ -8,9 +8,7 @@ from glob import glob
 import os
 from tqdm.auto import tqdm
 
-reference = open("data/paraini.txt", "rt").read()
-
-def get_metrics(hypothesis, name=""):
+def get_metrics(reference, hypothesis, name=""):
   tr = jiwer.Compose(
       [
           jiwer.RemoveEmptyStrings(),
@@ -25,7 +23,6 @@ def get_metrics(hypothesis, name=""):
   cer = jiwer.cer(reference, hypothesis, reference_transform=tr, hypothesis_transform=tr)
   untransformed_cer = jiwer.cer(reference.lower(), hypothesis.lower())
   return {
-    "name": name,
     "wer": output.wer,
     "mer": output.mer,
     "wil": output.wil,
@@ -34,17 +31,22 @@ def get_metrics(hypothesis, name=""):
   }
 
 results = []
-for f in tqdm(glob("data/*.txt")):
-    hypothesis = open(f, "rt").read()
-    name = os.path.basename(f).replace(".txt", "")
-    metrics = get_metrics(hypothesis, name)
-    results.append(metrics)
+df = pd.read_csv("gpu_tests.csv")
+for i, row in tqdm(df.iterrows(), total=len(df)):
+    # name,file,file_duration,time,time_per_second,transcript
+    try:
+      filename = "data/" + row.file.replace(".mp3", ".vtt")
+      reference = " ".join([caption.text for caption in webvtt.read(filename)])
+    except:
+      try:
+        reference = open("data/" + row.file.replace(".mp3", ".txt")).read()
+      except:
+        continue
+    metrics = get_metrics(row.transcript, reference)
+    row = row.to_dict()
+    row.update(metrics)
+    results.append(row)
 
-df = pd.DataFrame(results)
-
-timings = pd.concat((pd.read_csv("gpu_tests.csv"), pd.read_csv("data/transcription_times_paraini.csv")[["name", "time"]]))
-df = df.merge(timings, on="name", how="left")
-df.sort_values("time", inplace=True)
+df = pd.DataFrame(results).drop(columns="transcript").sort_values("time_per_second")
 print(df)
-
-df.to_csv("merged_results.csv", index=False)
+df.to_csv("gpu_results.csv", index=False)
