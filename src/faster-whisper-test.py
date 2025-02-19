@@ -136,13 +136,12 @@ if __name__ == "__main__":
 
     whisper_run('large-v3', 1, 1)
 
-    # if not os.path.exists(path + 'optuna_preds_simplified_' + audio_fname + '.csv'):
-
-    #     heads = ['Model', 'Device', 'num_threads', 'runtime', 'batch_size', 
-    #             'beam_size', "wer", "mer", "wil", "cer", "untransformed_cer"]
-    #     heads = np.reshape(np.array(heads), (1, -1))
-    #     df = pd.DataFrame(data=heads)
-    #     df.to_csv(path + 'optuna_preds_' + audio_fname + '.csv', mode='a', header=False, index=False)
+    if not os.path.exists(path + 'optuna_preds_' + audio_fname + '.csv'):
+        heads = ['Model', 'Device', 'num_threads', 'runtime', 'batch_size', 
+                'beam_size', "wer", "mer", "wil", "cer", "untransformed_cer"]
+        heads = np.reshape(np.array(heads), (1, -1))
+        df = pd.DataFrame(data=heads)
+        df.to_csv(path + 'optuna_preds_' + audio_fname + '.csv', mode='a', header=False, index=False)
    
     # study = optuna.create_study('sqlite:////mnt/whisper-vdi/data/optuna_HPO_db.db', direction="minimize")
     # study.optimize(objective, n_trials=10, n_jobs=5)
