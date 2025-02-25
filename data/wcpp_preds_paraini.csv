@@ -1,0 +1,2 @@
+Model,Device,num_threads,runtime,batch_size,beam_size,wer,mer,wil,cer,untransformed_cer
+large-v3-turbo,cpu,16,775.7093019485474,1,1,0.9141414141414141,0.7806531115218731,0.9401569925130134,0.9141414141414141,0.5245098039215687
