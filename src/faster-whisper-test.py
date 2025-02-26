@@ -2,7 +2,6 @@ from faster_whisper import WhisperModel, BatchedInferencePipeline
 import time
 import os
 import torch
-from torchmetrics.text import CharErrorRate
 import optuna
 import pandas as pd
 import numpy as np
