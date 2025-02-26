@@ -1,5 +1,6 @@
 # Ignore data files, they should be stored separately.
 data/*
+benchmark/multimedia/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
