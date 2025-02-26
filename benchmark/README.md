@@ -1,2 +1,3 @@
 # Benchmarking corpus and reference transcripts
-Download and place benchmark corpus and reference transcripts from [this folder in the CeR drive](https://uoa.sharepoint.com/:t:/r/sites/CentreforeResearchCeR-staff/Shared%20Documents/special-projects/Projects%202025/Nectar%20virtual%20transcription/Corpus/cerebral.txt?csf=1&web=1&e=5Da97p) in this directory.
+1. Create a new folder called multimedia inside this benchmark folder.
+2. Download and place benchmark corpus and reference transcripts from [this folder in the CeR drive](https://uoa.sharepoint.com/:t:/r/sites/CentreforeResearchCeR-staff/Shared%20Documents/special-projects/Projects%202025/Nectar%20virtual%20transcription/Corpus/cerebral.txt?csf=1&web=1&e=5Da97p) in this directory.
