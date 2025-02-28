@@ -34,7 +34,7 @@ def get_metrics(reference, hypothesis, name=""):
 model_dir = "/mnt/whisper-vdi/models/"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 path = '/mnt/whisper-vdi/data/'
-audio_file = path + "paraini.mp3"
+audio_file = path + "cerebral.mp3"
 num_threads = os.cpu_count()
 
 audio_fname = audio_file.removeprefix(path)
@@ -68,7 +68,7 @@ for model_name in model_names:
                                 device.type, 
                                 compute_type=compute_precision, 
                                 download_root=model_dir, 
-                                language='mi', 
+                                #language='mi', 
                                 threads = num_threads,
                                 local_files_only=False)
 
@@ -77,7 +77,7 @@ for model_name in model_names:
     segments = results['segments']
     model_name = model_name.replace('/','_')
 
-    with open(path + model_name + '.txt', 'w') as f:
+    with open(path + model_name + '_' + audio_fname +'.txt', 'w') as f:
         for segment in segments:
             f.write(segment['text'])
         f.close()
@@ -89,7 +89,7 @@ for model_name in model_names:
 
     gt = open(path + audio_fname + ".txt", "rt").read()
     gt = str(gt).lower()
-    preds = open(path + model_name + '.txt', "rt").read()
+    preds = open(path + model_name + '_' + audio_fname +'.txt', "rt").read()
     preds = str(preds).lower()
 
     metrics = get_metrics(gt, preds, model_name)

@@ -62,11 +62,10 @@ def whisper_run(model_name, batch_size, beam_size, name=""):
 
     segments, info = batched_model.transcribe(audio_file,
                                                 batch_size=batch_size,
-                                                beam_size=beam_size,
-                                                chunk_length=1)
+                                                beam_size=beam_size)#,
+                                                #chunk_length=1)
 
-    with open(path + model_name + '.txt', 'w') as f:
-        #f.write(transcript)
+    with open(path + 'transcribed_data/' + audio_fname + '-' + model_name + '.txt', 'w') as f:
         for segment in segments:
             f.write(segment.text)
         f.close()
@@ -78,10 +77,17 @@ def whisper_run(model_name, batch_size, beam_size, name=""):
 
     gt = open(path + audio_fname + ".txt", "rt").read()
     gt = str(gt).lower()
-    preds = open(path + model_name + '.txt', "rt").read()
+    preds = open(path + 'transcribed_data/' + audio_fname + '-' + model_name + '.txt', "rt").read()
     preds = str(preds).lower()
 
     metrics = get_metrics(gt, preds, model_name)
+
+    if not os.path.exists(path + 'faster_whisper_' + audio_fname + '.csv'):
+        heads = ['Model', 'Device', 'num_threads', 'runtime', 'batch_size', 
+                'beam_size', "wer", "mer", "wil", "cer", "untransformed_cer"]
+        heads = np.reshape(np.array(heads), (1, -1))
+        df = pd.DataFrame(data=heads)
+        df.to_csv(path + 'faster_whisper_' + audio_fname + '.csv', mode='a', header=False, index=False)
 
     df_data=[model_name, device, num_threads, runtime, batch_size, 
                 beam_size, metrics["wer"], metrics["mer"], metrics["wil"], metrics["cer"], metrics["untransformed_cer"]]
@@ -93,8 +99,9 @@ def whisper_run(model_name, batch_size, beam_size, name=""):
     #     f.write(txt + '\n')
     # f.close()
 
-    df.to_csv(path + name + 'preds_' + audio_fname + '.csv', mode='a', header=False, index=False)
-    return metrics["untransformed_cer"]
+    df.to_csv(path + 'faster_whisper_' + audio_fname + '.csv', mode='a', header=False, index=False)
+    #return metrics["untransformed_cer"]
+    return
 
 def objective(trial):
     beam_size = trial.suggest_int("beam_size", 1, 2)
@@ -119,28 +126,32 @@ def objective(trial):
 
 
 if __name__ == "__main__":
-    model_dir = "/mnt/whisper-vdi/models/"
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    path = '/mnt/whisper-vdi/data/'
-    audio_file = path + "cerebral.mp3"
-    num_threads = os.cpu_count()
+    # model_dir = "/mnt/whisper-vdi/models/"
+    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # path = '/mnt/whisper-vdi/data/'
+    # audio_file = path + "cerebral.mp3"
+    # num_threads = os.cpu_count()
 
-    audio_fname = audio_file.removeprefix(path)
-    audio_fname = audio_fname.split('.')[0]
+    # audio_fname = audio_file.removeprefix(path)
+    # audio_fname = audio_fname.split('.')[0]
 
-    ref = open(path + audio_fname + ".txt", "rt").read()
-    hyp = open(path + audio_fname + "-canary.txt", "rt").read()
+    #ref = open(path + audio_fname + ".txt", "rt").read()
+    #hyp = open(path + audio_fname + "-canary.txt", "rt").read()
+    #hyp = open(path + model_name + '.txt', 'rt').read()
 
-    met = get_metrics(ref, hyp)
+    #met = get_metrics(ref, hyp)
 
-    whisper_run('large-v3', 1, 1)
+    model_names = ["large-v3-turbo", "large-v3", "large-v2"]
 
-    if not os.path.exists(path + 'optuna_preds_' + audio_fname + '.csv'):
-        heads = ['Model', 'Device', 'num_threads', 'runtime', 'batch_size', 
-                'beam_size', "wer", "mer", "wil", "cer", "untransformed_cer"]
-        heads = np.reshape(np.array(heads), (1, -1))
-        df = pd.DataFrame(data=heads)
-        df.to_csv(path + 'optuna_preds_' + audio_fname + '.csv', mode='a', header=False, index=False)
+    for model_name in model_names:
+        whisper_run(model_name, 1, 1)
+
+    # if not os.path.exists(path + 'optuna_preds_' + audio_fname + '.csv'):
+    #     heads = ['Model', 'Device', 'num_threads', 'runtime', 'batch_size', 
+    #             'beam_size', "wer", "mer", "wil", "cer", "untransformed_cer"]
+    #     heads = np.reshape(np.array(heads), (1, -1))
+    #     df = pd.DataFrame(data=heads)
+    #     df.to_csv(path + 'optuna_preds_' + audio_fname + '.csv', mode='a', header=False, index=False)
    
     # study = optuna.create_study('sqlite:////mnt/whisper-vdi/data/optuna_HPO_db.db', direction="minimize")
     # study.optimize(objective, n_trials=10, n_jobs=5)
